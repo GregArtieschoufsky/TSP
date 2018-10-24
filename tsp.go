@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"math"
 	"math/rand"
@@ -45,6 +46,25 @@ func main() {
 	var numberOfPoints = rand.Intn(20) + 4
 	fmt.Printf("random = %d\n", numberOfPoints)
 
+	startTime := time.Now()
+
+	maxPoints, e := strconv.Atoi(os.Args[1])
+	minPoints, e := strconv.Atoi(os.Args[2])
+
+	if e != nil {
+		fmt.Println(e)
+	}
+
+	SolveShortestByShortest(numberOfPoints)
+
+	elapsedTime := time.Since(startTime)
+	fmt.Printf("Calculation took %s\n", elapsedTime)
+	fmt.Printf("Calculation took %s per point\n", 
+		(elapsedTime / time.Duration(numberOfPoints)))
+}
+
+func SolveShortestByShortest(numberOfPoints int) []Pair {
+
 	// Build up a set of a number of random points
 	points := BuildPoints(numberOfPoints)
 	PrintPoints(points)
@@ -62,6 +82,8 @@ func main() {
 	fmt.Printf("Total Distance = %f\n", GetTotalLength(route))
 	fmt.Printf("Avg Distance Of All = %f\n", GetAvgLength(pairs))
 	fmt.Printf("Avg Distance Of Route = %f\n", GetAvgLength(route))
+
+	return route
 }
 
 // GetAvgLength computes the average length of distance between a set
@@ -188,6 +210,7 @@ func RouteShortestFirst(pairs []Pair) []Pair {
 	// The last point must be joined with the first point of the route to complete the route
 	lastPoint := GetLastPointToConnect(routeOfPairs)
 	lastPair := GetPairFromPairs(lastPoint, startingPoint, pairs)
+	lastPair.index = len(routeOfPairs)
 	routeOfPairs = append(routeOfPairs, lastPair)
 
 	return routeOfPairs
