@@ -28,7 +28,7 @@ type Pair struct {
 }
 
 // String returns a string representation of the Pair.
-func (pair *Pair) String() string {
+func (pair Pair) String() string {
 	return fmt.Sprintf("[%d] %s,%s,%f",
 		pair.index,
 		pair.pointA,
