@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -13,6 +12,11 @@ type Point struct {
 	index int
 	x     int
 	y     int
+}
+
+// String returns a string representation of the Point.
+func (p Point) String() string {
+	return fmt.Sprintf("[%d] %d,%d", p.index, p.x, p.y)
 }
 
 // A pair of points with a distance between them
@@ -31,7 +35,7 @@ func main() {
 
 	// Randomly determine a number of points to generate
 	var numberOfPoints = rand.Intn(20) + 4
-	fmt.Println("random = " + strconv.Itoa(numberOfPoints))
+	fmt.Printf("random = %d\n", numberOfPoints)
 
 	// Build up a set of a number of random points
 	points := BuildPoints(numberOfPoints)
@@ -47,9 +51,9 @@ func main() {
 	PrintPairs(route)
 
 	// Print to console a description of the route determined
-	fmt.Println("Total Distance = " + strconv.FormatFloat(GetTotalLength(route), 'f', 2, 64))
-	fmt.Println("Avg Distance Of All = " + strconv.FormatFloat(GetAvgLength(pairs), 'f', 2, 64))
-	fmt.Println("Avg Distance Of Route = " + strconv.FormatFloat(GetAvgLength(route), 'f', 2, 64))
+	fmt.Printf("Total Distance = %f\n", GetTotalLength(route))
+	fmt.Printf("Avg Distance Of All = %f\n", GetAvgLength(pairs))
+	fmt.Printf("Avg Distance Of Route = %f\n", GetAvgLength(route))
 }
 
 // Get the average length of distance between a set of paired points
@@ -79,43 +83,29 @@ func (p Point) Distance(p2 Point) float64 {
 func PrintPoints(points []Point) {
 	fmt.Println("\nPoints:")
 	for _, point := range points {
-		fmt.Println(DescribePoint(point))
+		fmt.Println(point)
 	}
-}
-
-// Retrun a concatenated string describing a point in x, y space
-func DescribePoint(point Point) string {
-	pointDescription :=
-		"[" + strconv.Itoa(point.index) + "] " +
-			strconv.Itoa(point.x) + "," + strconv.Itoa(point.y)
-
-	return pointDescription
 }
 
 // Use the fmt import to itteratively print a description of each pair in a set
 func PrintPairs(pairs []Pair) {
-	fmt.Println("\nPairs of length (" + strconv.Itoa(len(pairs)) + ")")
+	fmt.Printf("\nPairs of length (%d)\n", len(pairs))
 	for _, pair := range pairs {
-		fmt.Println(
-			"[",
-			strconv.Itoa(pair.index),
-			"] ",
-			DescribePoint(pair.pointA),
-			",",
-			DescribePoint(pair.pointB),
-			",",
-			strconv.FormatFloat(pair.distance, 'f', 2, 64))
+		fmt.Printf("[%d] %s, %s, %f\n",
+			pair.index,
+			pair.pointA,
+			pair.pointB,
+			pair.distance)
 	}
 }
 
-// Return a concatenated string describing a pair of points in x, y space
-func DescribePair(pair Pair) string {
-	pairDescription :=
-		"[" + strconv.Itoa(pair.index) + "] " +
-			DescribePoint(pair.pointA) + "," + DescribePoint(pair.pointB) + "," +
-			strconv.FormatFloat(pair.distance, 'f', 2, 64)
-
-	return pairDescription
+// String returns a string representation of the Pair.
+func (pair *Pair) String() string {
+	return fmt.Sprintf("[%d] %s,%s,%f",
+		pair.index,
+		pair.pointA,
+		pair.pointB,
+		pair.distance)
 }
 
 // Return a number of randomly generated points
@@ -170,7 +160,7 @@ func RouteShortestFirst(pairs []Pair) []Pair {
 	// Begin with a point inside of a pair of the shortest distance
 	startingPair := PairWithShortestDistance(pairs)
 	startingPoint := startingPair.pointA
-	fmt.Println("Starting Point = " + DescribePoint(startingPoint))
+	fmt.Printf("Starting Point = %s\n", startingPoint)
 
 	// The complimenting point from the starting pair must be identified and connected next
 	pointToConnect := startingPair.pointB
