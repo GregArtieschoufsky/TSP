@@ -33,8 +33,8 @@ func main() {
 	minPoints, e := strconv.Atoi(os.Args[2])
 
 	if e != nil {
-        fmt.Println(e)
-    }
+		fmt.Println(e)
+	}
 
 	//Seed the random generator with the current time
 	rand.Seed(startTime.UnixNano())
@@ -42,6 +42,16 @@ func main() {
 	//Randomly determine a number of points to generate
 	var numberOfPoints = rand.Intn(maxPoints-minPoints) + minPoints
 	fmt.Println("random = " + strconv.Itoa(numberOfPoints))
+
+	SolveShortestByShortest(numberOfPoints)
+
+	elapsedTime := time.Since(startTime)
+	fmt.Printf("Calculation took %s\n", elapsedTime)
+	fmt.Printf("Calculation took %s per point\n", 
+		(elapsedTime / time.Duration(numberOfPoints)))
+}
+
+func SolveShortestByShortest(numberOfPoints int) []Pair {
 
 	//Build up a set of a number of random points
 	points := BuildPoints(numberOfPoints)
@@ -61,10 +71,7 @@ func main() {
 	fmt.Println("Avg Distance Of All = " + strconv.FormatFloat(GetAvgLength(pairs), 'f', 2, 64))
 	fmt.Println("Avg Distance Of Route = " + strconv.FormatFloat(GetAvgLength(route), 'f', 2, 64))
 
-	elapsedTime := time.Since(startTime)
-	fmt.Printf("Calculation took %s\n", elapsedTime)
-	fmt.Printf("Calculation took %s per point\n", 
-		(elapsedTime / time.Duration(numberOfPoints)))
+	return route
 }
 
 //Get the average length of distance between a set of paired points
