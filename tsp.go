@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"fmt"
 	"math"
 	"math/rand"
@@ -39,13 +40,6 @@ func (pair Pair) String() string {
 
 func main() {
 
-	// Seed the random generator with the current time
-	rand.Seed(time.Now().UnixNano())
-
-	// Randomly determine a number of points to generate
-	var numberOfPoints = rand.Intn(20) + 4
-	fmt.Printf("random = %d\n", numberOfPoints)
-
 	startTime := time.Now()
 
 	maxPoints, e := strconv.Atoi(os.Args[1])
@@ -54,6 +48,13 @@ func main() {
 	if e != nil {
 		fmt.Println(e)
 	}
+
+	// Seed the random generator with the current time
+	rand.Seed(time.Now().UnixNano())
+
+	// Randomly determine a number of points to generate
+	var numberOfPoints = rand.Intn(maxPoints-minPoints) + minPoints
+	fmt.Printf("random = %d\n", numberOfPoints)
 
 	SolveShortestByShortest(numberOfPoints)
 
