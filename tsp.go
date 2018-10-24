@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// A point in 2D space, aligned with an x and y intersection
+// Point is a 2D point aligned with an x and y intersection.
 type Point struct {
 	index int
 	x     int
@@ -19,7 +19,7 @@ func (p Point) String() string {
 	return fmt.Sprintf("[%d] %d,%d", p.index, p.x, p.y)
 }
 
-// A pair of points with a distance between them
+// Pair is two points with a distance between them.
 type Pair struct {
 	index    int
 	pointA   Point
@@ -27,7 +27,6 @@ type Pair struct {
 	distance float64
 }
 
-// Entry function to generate points and solve the TSP problem
 func main() {
 
 	// Seed the random generator with the current time
@@ -56,13 +55,15 @@ func main() {
 	fmt.Printf("Avg Distance Of Route = %f\n", GetAvgLength(route))
 }
 
-// Get the average length of distance between a set of paired points
+// GetAvgLength computes the average length of distance between a set
+// of paired points.
 func GetAvgLength(pairs []Pair) float64 {
 
 	return (GetTotalLength(pairs) / float64(len(pairs)))
 }
 
-// Get the aggregated length of distance between a set of paired points
+// GetTotalLength computes the aggregated length of distance between a
+// set of paired points.
 func GetTotalLength(pairs []Pair) float64 {
 	total := 0.0
 	for _, pair := range pairs {
@@ -72,14 +73,14 @@ func GetTotalLength(pairs []Pair) float64 {
 	return total
 }
 
-// Calculate the distance between two points
+// Distance returns the distance between two points.
 func (p Point) Distance(p2 Point) float64 {
 	first := math.Pow(float64(p2.x-p.x), 2)
 	second := math.Pow(float64(p2.y-p.y), 2)
 	return math.Sqrt(first + second)
 }
 
-// Use the fmt import to itteratively print description of each point in a set
+// PrintPoints prints the list of points.
 func PrintPoints(points []Point) {
 	fmt.Println("\nPoints:")
 	for _, point := range points {
@@ -87,7 +88,7 @@ func PrintPoints(points []Point) {
 	}
 }
 
-// Use the fmt import to itteratively print a description of each pair in a set
+// PrintPairs prints a list of pair descriptions.
 func PrintPairs(pairs []Pair) {
 	fmt.Printf("\nPairs of length (%d)\n", len(pairs))
 	for _, pair := range pairs {
@@ -108,7 +109,7 @@ func (pair *Pair) String() string {
 		pair.distance)
 }
 
-// Return a number of randomly generated points
+// BuildPoints returns a number of randomly generated points.
 func BuildPoints(numberOfPoints int) []Point {
 	points := make([]Point, numberOfPoints)
 	for i := 0; i < numberOfPoints; i++ {
@@ -120,7 +121,7 @@ func BuildPoints(numberOfPoints int) []Point {
 	return points
 }
 
-// Create a pair between each given point in a set
+// PairPoints creates a pair between each given point in a set.
 func PairPoints(points []Point) []Pair {
 	var count = 0
 	var skip = false
@@ -154,7 +155,8 @@ func PairPoints(points []Point) []Pair {
 	return pairs
 }
 
-// Begin routine to define a path between all points beginning with the shortest path
+// RouteShortestFirst starts a routine to define a path between all
+// points beginning with the shortest path.
 func RouteShortestFirst(pairs []Pair) []Pair {
 
 	// Begin with a point inside of a pair of the shortest distance
@@ -189,7 +191,8 @@ func RouteShortestFirst(pairs []Pair) []Pair {
 	return routeOfPairs
 }
 
-// Return a pair from a set that includes two given points
+// GetPairFromPairs returns a pair from a set that includes two given
+// points.
 func GetPairFromPairs(pointA Point, pointB Point, pairs []Pair) Pair {
 	for _, pair := range pairs {
 
@@ -207,7 +210,8 @@ func GetPairFromPairs(pointA Point, pointB Point, pairs []Pair) Pair {
 	return pairs[len(pairs)-1]
 }
 
-// Determine which point from a route has to be connected yet
+// GetLastPointToConnect determines which point from a route has to be
+// connected yet.
 func GetLastPointToConnect(pairs []Pair) Point {
 	lastPair := pairs[len(pairs)-1]
 	secondToLastPair := pairs[len(pairs)-2]
@@ -220,7 +224,8 @@ func GetLastPointToConnect(pairs []Pair) Point {
 	return lastPair.pointA
 }
 
-// Connect to a given point a pair of points with a short distance
+// ConnectPointToClosest connects pointIn to a given point a pair of
+// points with a short distance.
 func ConnectPointToClosest(pointIn Point, pairs []Pair, routeOfPairs []Pair) []Pair {
 
 	if len(pairs) > 0 {
@@ -253,7 +258,8 @@ func ConnectPointToClosest(pointIn Point, pairs []Pair, routeOfPairs []Pair) []P
 	return routeOfPairs
 }
 
-// Remove all pairs containing a given point from a set of pairs
+// RemovePairsWithPoint removes all pairs containing a given point
+// from a set of pairs.
 func RemovePairsWithPoint(point Point, pairs []Pair) []Pair {
 
 	pairsWithoutPoint := make([]Pair, len(pairs))
@@ -272,7 +278,7 @@ func RemovePairsWithPoint(point Point, pairs []Pair) []Pair {
 	return pairsWithoutPoint
 }
 
-// Return all pairs containing a given point
+// GetPairsContainingPoint returns all pairs containing a given point.
 func GetPairsContainingPoint(point Point, pairs []Pair) []Pair {
 	var pairsWithPoint []Pair
 	for _, pair := range pairs {
@@ -287,7 +293,7 @@ func GetPairsContainingPoint(point Point, pairs []Pair) []Pair {
 	return pairsWithPoint
 }
 
-// From a given pair, return the paired point of a given point
+// GetOtherPointInPair returns the paired point of a given point.
 func GetOtherPointInPair(pointIn Point, pair Pair) Point {
 	if pair.pointA == pointIn {
 		return pair.pointB
@@ -295,7 +301,7 @@ func GetOtherPointInPair(pointIn Point, pair Pair) Point {
 	return pair.pointA
 }
 
-// Get the index assigned to a pair from a set of pairs
+// GetIndexOfPair computes the index assigned to a pair from a set of pairs.
 func GetIndexOfPair(pairIn Pair, pairs []Pair) int {
 	i := 0
 	for _, pair := range pairs {
@@ -307,7 +313,8 @@ func GetIndexOfPair(pairIn Pair, pairs []Pair) int {
 	return -1
 }
 
-// Return the pair with the shortest distance
+// PairWithShortestDistance returns the pair with the shortest
+// distance.
 func PairWithShortestDistance(pairs []Pair) Pair {
 	var distance float64
 	var shortestDistancePair Pair
