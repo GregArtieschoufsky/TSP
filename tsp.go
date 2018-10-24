@@ -178,10 +178,10 @@ func RouteShortestFirst(pairs []Pair) []Pair {
 			distance: startingPairDistance})
 
 	// Redefine the remaining pairs of points to connect yet to be without already paired point
-	pairsRefined := RemovePairsWithPoint(startingPoint, pairs)
+	pairsRefined := startingPoint.RemovePairsWithPoint(pairs)
 
 	// Recursively pair shortest points until unmapped points no longer exist
-	routeOfPairs = ConnectPointToClosest(pointToConnect, pairsRefined, routeOfPairs)
+	routeOfPairs = pointToConnect.ConnectPointToClosest(pairsRefined, routeOfPairs)
 
 	// The last point must be joined with the first point of the route to complete the route
 	lastPoint := GetLastPointToConnect(routeOfPairs)
@@ -226,11 +226,11 @@ func GetLastPointToConnect(pairs []Pair) Point {
 
 // ConnectPointToClosest connects pointIn to a given point a pair of
 // points with a short distance.
-func ConnectPointToClosest(pointIn Point, pairs []Pair, routeOfPairs []Pair) []Pair {
+func (p Point) ConnectPointToClosest(pairs []Pair, routeOfPairs []Pair) []Pair {
 
 	if len(pairs) > 0 {
 
-		pairsWithPoint := GetPairsContainingPoint(pointIn, pairs)
+		pairsWithPoint := p.GetPairsContainingPoint(pairs)
 
 		if len(pairsWithPoint) > 0 {
 
@@ -238,21 +238,21 @@ func ConnectPointToClosest(pointIn Point, pairs []Pair, routeOfPairs []Pair) []P
 			focusPair := PairWithShortestDistance(pairsWithPoint)
 
 			// Determine the point needing a subsequent connection
-			pointToConnect := GetOtherPointInPair(pointIn, focusPair)
+			pointToConnect := p.GetOtherPoint(focusPair)
 
 			distance := focusPair.distance
 
 			// Ensure route without duplicate trips to same point by reducing pair set
-			pairsRefined := RemovePairsWithPoint(pointIn, pairs)
+			pairsRefined := p.RemovePairsWithPoint(pairs)
 
 			// Add the shortest distance pair to the route
 			pairToAdd := Pair{index: len(routeOfPairs),
-				pointA: pointIn, pointB: pointToConnect, distance: distance}
+				pointA: p, pointB: pointToConnect, distance: distance}
 
 			routeOfPairs = append(routeOfPairs, pairToAdd)
 
 			// Continue connecting points until exhausted
-			routeOfPairs = ConnectPointToClosest(pointToConnect, pairsRefined, routeOfPairs)
+			routeOfPairs = pointToConnect.ConnectPointToClosest(pairsRefined, routeOfPairs)
 		}
 	}
 	return routeOfPairs
@@ -260,15 +260,15 @@ func ConnectPointToClosest(pointIn Point, pairs []Pair, routeOfPairs []Pair) []P
 
 // RemovePairsWithPoint removes all pairs containing a given point
 // from a set of pairs.
-func RemovePairsWithPoint(point Point, pairs []Pair) []Pair {
+func (p Point) RemovePairsWithPoint(pairs []Pair) []Pair {
 
 	pairsWithoutPoint := make([]Pair, len(pairs))
 	copy(pairsWithoutPoint, pairs)
 
 	for _, pair := range pairs {
 
-		if pair.pointA.index == point.index || pair.pointB.index == point.index {
-			pairIndexToDelete := GetIndexOfPair(pair, pairsWithoutPoint)
+		if pair.pointA.index == p.index || pair.pointB.index == p.index {
+			pairIndexToDelete := pair.GetIndex(pairsWithoutPoint)
 
 			if pairIndexToDelete >= 0 {
 				pairsWithoutPoint = append(pairsWithoutPoint[:pairIndexToDelete], pairsWithoutPoint[pairIndexToDelete+1:]...)
@@ -279,10 +279,10 @@ func RemovePairsWithPoint(point Point, pairs []Pair) []Pair {
 }
 
 // GetPairsContainingPoint returns all pairs containing a given point.
-func GetPairsContainingPoint(point Point, pairs []Pair) []Pair {
+func (p Point) GetPairsContainingPoint(pairs []Pair) []Pair {
 	var pairsWithPoint []Pair
 	for _, pair := range pairs {
-		if pair.pointA.index == point.index || pair.pointB.index == point.index {
+		if pair.pointA.index == p.index || pair.pointB.index == p.index {
 			pairsWithPoint = append(
 				pairsWithPoint,
 				Pair{index: pair.index, pointA: pair.pointA, pointB: pair.pointB,
@@ -294,18 +294,18 @@ func GetPairsContainingPoint(point Point, pairs []Pair) []Pair {
 }
 
 // GetOtherPointInPair returns the paired point of a given point.
-func GetOtherPointInPair(pointIn Point, pair Pair) Point {
-	if pair.pointA == pointIn {
+func (p Point) GetOtherPoint(pair Pair) Point {
+	if pair.pointA == p {
 		return pair.pointB
 	}
 	return pair.pointA
 }
 
-// GetIndexOfPair computes the index assigned to a pair from a set of pairs.
-func GetIndexOfPair(pairIn Pair, pairs []Pair) int {
+// GetIndex computes the index assigned to a pair from a set of pairs.
+func (p Pair) GetIndex(pairs []Pair) int {
 	i := 0
 	for _, pair := range pairs {
-		if pairIn.index == pair.index {
+		if p.index == pair.index {
 			return i
 		}
 		i++
