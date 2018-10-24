@@ -67,8 +67,7 @@ func main() {
 // GetAvgLength computes the average length of distance between a set
 // of paired points.
 func GetAvgLength(pairs []Pair) float64 {
-
-	return (GetTotalLength(pairs) / float64(len(pairs)))
+	return GetTotalLength(pairs) / float64(len(pairs))
 }
 
 // GetTotalLength computes the aggregated length of distance between a
@@ -76,8 +75,7 @@ func GetAvgLength(pairs []Pair) float64 {
 func GetTotalLength(pairs []Pair) float64 {
 	total := 0.0
 	for _, pair := range pairs {
-
-		total = (total + pair.distance)
+		total += pair.distance
 	}
 	return total
 }
@@ -174,8 +172,12 @@ func RouteShortestFirst(pairs []Pair) []Pair {
 	// Add the first, shortest pair to the route
 	routeOfPairs = append(
 		routeOfPairs,
-		Pair{index: 0, pointA: startingPoint, pointB: pointToConnect,
-			distance: startingPairDistance})
+		Pair{
+			index:    0,
+			pointA:   startingPoint,
+			pointB:   pointToConnect,
+			distance: startingPairDistance,
+		})
 
 	// Redefine the remaining pairs of points to connect yet to be without already paired point
 	pairsRefined := startingPoint.RemovePairsWithPoint(pairs)
@@ -195,14 +197,10 @@ func RouteShortestFirst(pairs []Pair) []Pair {
 // points.
 func GetPairFromPairs(pointA Point, pointB Point, pairs []Pair) Pair {
 	for _, pair := range pairs {
-
 		if pair.pointA.index == pointA.index && pair.pointB.index == pointB.index {
-
 			return pair
 		}
-
 		if pair.pointA.index == pointB.index && pair.pointB.index == pointA.index {
-
 			return pair
 		}
 	}
@@ -266,10 +264,8 @@ func (p Point) RemovePairsWithPoint(pairs []Pair) []Pair {
 	copy(pairsWithoutPoint, pairs)
 
 	for _, pair := range pairs {
-
 		if pair.pointA.index == p.index || pair.pointB.index == p.index {
-			pairIndexToDelete, have := pair.GetIndex(pairsWithoutPoint)
-			if have {
+			if pairIndexToDelete, have := pair.GetIndex(pairsWithoutPoint); have {
 				pairsWithoutPoint = append(pairsWithoutPoint[:pairIndexToDelete], pairsWithoutPoint[pairIndexToDelete+1:]...)
 			}
 		}
@@ -284,8 +280,12 @@ func (p Point) GetPairsContainingPoint(pairs []Pair) []Pair {
 		if pair.pointA.index == p.index || pair.pointB.index == p.index {
 			pairsWithPoint = append(
 				pairsWithPoint,
-				Pair{index: pair.index, pointA: pair.pointA, pointB: pair.pointB,
-					distance: pair.distance})
+				Pair{
+					index:    pair.index,
+					pointA:   pair.pointA,
+					pointB:   pair.pointB,
+					distance: pair.distance,
+				})
 		}
 	}
 
