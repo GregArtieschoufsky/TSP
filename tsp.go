@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"math"
 	"math/rand"
@@ -26,11 +27,20 @@ type Pair struct {
 //Entry function to generate points and solve the TSP problem
 func main() {
 
+	startTime := time.Now()
+
+	maxPoints, e := strconv.Atoi(os.Args[1])
+	minPoints, e := strconv.Atoi(os.Args[2])
+
+	if e != nil {
+        fmt.Println(e)
+    }
+
 	//Seed the random generator with the current time
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(startTime.UnixNano())
 
 	//Randomly determine a number of points to generate
-	var numberOfPoints = rand.Intn(20) + 4
+	var numberOfPoints = rand.Intn(maxPoints-minPoints) + minPoints
 	fmt.Println("random = " + strconv.Itoa(numberOfPoints))
 
 	//Build up a set of a number of random points
@@ -50,6 +60,11 @@ func main() {
 	fmt.Println("Total Distance = " + strconv.FormatFloat(GetTotalLength(route), 'f', 2, 64))
 	fmt.Println("Avg Distance Of All = " + strconv.FormatFloat(GetAvgLength(pairs), 'f', 2, 64))
 	fmt.Println("Avg Distance Of Route = " + strconv.FormatFloat(GetAvgLength(route), 'f', 2, 64))
+
+	elapsedTime := time.Since(startTime)
+	fmt.Printf("Calculation took %s\n", elapsedTime)
+	fmt.Printf("Calculation took %s per point\n", 
+		(elapsedTime / time.Duration(numberOfPoints)))
 }
 
 //Get the average length of distance between a set of paired points
@@ -194,6 +209,7 @@ func RouteShortestFirst(pairs []Pair) []Pair {
 	//The last point must be joined with the first point of the route to complete the route
 	lastPoint := GetLastPointToConnect(routeOfPairs)
 	lastPair := GetPairFromPairs(lastPoint, startingPoint, pairs)
+	lastPair.index = len(routeOfPairs)
 	routeOfPairs = append(routeOfPairs, lastPair)
 	
 	return routeOfPairs
@@ -275,7 +291,8 @@ func RemovePairsWithPoint(point Point, pairs []Pair) []Pair {
 			pairIndexToDelete := GetIndexOfPair(pair, pairsWithoutPoint)
 			
 			if pairIndexToDelete >= 0 {
-				pairsWithoutPoint = append(pairsWithoutPoint[:pairIndexToDelete], pairsWithoutPoint[pairIndexToDelete+1:]...)
+				pairsWithoutPoint = append(pairsWithoutPoint[:pairIndexToDelete], 
+					pairsWithoutPoint[pairIndexToDelete+1:]...)
 			}
 		}
 	}
