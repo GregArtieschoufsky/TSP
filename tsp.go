@@ -27,6 +27,15 @@ type Pair struct {
 	distance float64
 }
 
+// String returns a string representation of the Pair.
+func (pair *Pair) String() string {
+	return fmt.Sprintf("[%d] %s,%s,%f",
+		pair.index,
+		pair.pointA,
+		pair.pointB,
+		pair.distance)
+}
+
 func main() {
 
 	// Seed the random generator with the current time
@@ -98,15 +107,6 @@ func PrintPairs(pairs []Pair) {
 			pair.pointB,
 			pair.distance)
 	}
-}
-
-// String returns a string representation of the Pair.
-func (pair *Pair) String() string {
-	return fmt.Sprintf("[%d] %s,%s,%f",
-		pair.index,
-		pair.pointA,
-		pair.pointB,
-		pair.distance)
 }
 
 // BuildPoints returns a number of randomly generated points.
