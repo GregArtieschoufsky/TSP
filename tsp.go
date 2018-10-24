@@ -268,9 +268,8 @@ func (p Point) RemovePairsWithPoint(pairs []Pair) []Pair {
 	for _, pair := range pairs {
 
 		if pair.pointA.index == p.index || pair.pointB.index == p.index {
-			pairIndexToDelete := pair.GetIndex(pairsWithoutPoint)
-
-			if pairIndexToDelete >= 0 {
+			pairIndexToDelete, have := pair.GetIndex(pairsWithoutPoint)
+			if have {
 				pairsWithoutPoint = append(pairsWithoutPoint[:pairIndexToDelete], pairsWithoutPoint[pairIndexToDelete+1:]...)
 			}
 		}
@@ -302,15 +301,15 @@ func (p Point) GetOtherPoint(pair Pair) Point {
 }
 
 // GetIndex computes the index assigned to a pair from a set of pairs.
-func (p Pair) GetIndex(pairs []Pair) int {
-	i := 0
-	for _, pair := range pairs {
+//
+// If the pair isn't found, returns false.
+func (p Pair) GetIndex(pairs []Pair) (int, bool) {
+	for i, pair := range pairs {
 		if p.index == pair.index {
-			return i
+			return i, true
 		}
-		i++
 	}
-	return -1
+	return 0, false
 }
 
 // PairWithShortestDistance returns the pair with the shortest
