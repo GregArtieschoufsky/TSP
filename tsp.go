@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"time"
+	"os/exec"
 )
 
 // Point is a 2D point aligned with an x and y intersection.
@@ -17,8 +18,8 @@ type Point struct {
 }
 
 // String returns a string representation of the Point.
-func (p Point) String() string {
-	return fmt.Sprintf("[%d] %d,%d", p.index, p.x, p.y)
+func (point Point) String() string {
+	return fmt.Sprintf("[%d] %d,%d", point.index, point.x, point.y)
 }
 
 // Pair is two points with a distance between them.
@@ -30,12 +31,12 @@ type Pair struct {
 }
 
 // String returns a string representation of the Pair.
-func (pair Pair) String() string {
+func (p Pair) String() string {
 	return fmt.Sprintf("[%d] %s,%s,%f",
-		pair.index,
-		pair.pointA,
-		pair.pointB,
-		pair.distance)
+		p.index,
+		p.pointA,
+		p.pointB,
+		p.distance)
 }
 
 func main() {
@@ -56,14 +57,81 @@ func main() {
 	var numberOfPoints = rand.Intn(maxPoints-minPoints) + minPoints
 	fmt.Printf("random = %d\n", numberOfPoints)
 
-	SolveShortestByShortest(numberOfPoints)
+	pairs := SolveShortestByShortest(numberOfPoints)
 
 	elapsedTime := time.Since(startTime)
 	fmt.Printf("Calculation took %s\n", elapsedTime)
 	fmt.Printf("Calculation took %s per point\n", 
 		(elapsedTime / time.Duration(numberOfPoints)))
+
+	PrintToFile(pairs)
+
+	c := exec.Command("/usr/bin/python", "./plot.py")
+	if err := c.Run(); err != nil { 
+		fmt.Println("Error: ", err)
+	}
 }
 
+// CoordsAsString Prepare string describing route coordinates
+func CoordsAsString(pairs []Pair) string {
+
+	x := ""
+	y := ""
+	p := ""
+
+	lastIndex := -1
+
+	for _, pair := range pairs {
+
+		if lastIndex == pair.pointA.index {
+			x += strconv.Itoa(pair.pointB.x) + ","
+			y += strconv.Itoa(pair.pointB.y) + ","
+			p += strconv.Itoa(pair.pointB.index) + ","
+			lastIndex = pair.pointB.index
+		} else {
+			x += strconv.Itoa(pair.pointA.x) + ","
+			y += strconv.Itoa(pair.pointA.y) + ","
+			p += strconv.Itoa(pair.pointA.index) + ","
+			lastIndex = pair.pointA.index
+		}
+	}
+
+	x += strconv.Itoa(pairs[0].pointA.x)
+	y += strconv.Itoa(pairs[0].pointA.y)
+	p += strconv.Itoa(pairs[0].pointA.index)
+
+	s := x + "\n" + y + "\n" + p + "\n"
+	return s
+}
+
+// PrintToFile Prints route to a file
+func PrintToFile(pairs []Pair) {
+
+	f, err := os.Create("route.txt")
+    if err != nil {
+        fmt.Println(err)
+        return
+	}
+
+	s := CoordsAsString(pairs)
+	
+    l, err := f.WriteString(s)
+    if err != nil {
+        fmt.Println(err)
+        f.Close()
+        return
+	}
+	
+    fmt.Println(l, "bytes written successfully")
+    err = f.Close()
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+}
+
+// SolveShortestByShortest calculates and returns a route 
+// for TSP problem using shortest path first
 func SolveShortestByShortest(numberOfPoints int) []Pair {
 
 	// Build up a set of a number of random points
@@ -104,9 +172,9 @@ func GetTotalLength(pairs []Pair) float64 {
 }
 
 // Distance returns the distance between two points.
-func (p Point) Distance(p2 Point) float64 {
-	first := math.Pow(float64(p2.x-p.x), 2)
-	second := math.Pow(float64(p2.y-p.y), 2)
+func (point Point) Distance(p2 Point) float64 {
+	first := math.Pow(float64(p2.x-point.x), 2)
+	second := math.Pow(float64(p2.y-point.y), 2)
 	return math.Sqrt(first + second)
 }
 
@@ -248,11 +316,11 @@ func GetLastPointToConnect(pairs []Pair) Point {
 
 // ConnectPointToClosest connects pointIn to a given point a pair of
 // points with a short distance.
-func (p Point) ConnectPointToClosest(pairs []Pair, routeOfPairs []Pair) []Pair {
+func (point Point) ConnectPointToClosest(pairs []Pair, routeOfPairs []Pair) []Pair {
 
 	if len(pairs) > 0 {
 
-		pairsWithPoint := p.GetPairsContainingPoint(pairs)
+		pairsWithPoint := point.GetPairsContainingPoint(pairs)
 
 		if len(pairsWithPoint) > 0 {
 
@@ -260,16 +328,16 @@ func (p Point) ConnectPointToClosest(pairs []Pair, routeOfPairs []Pair) []Pair {
 			focusPair := PairWithShortestDistance(pairsWithPoint)
 
 			// Determine the point needing a subsequent connection
-			pointToConnect := p.GetOtherPoint(focusPair)
+			pointToConnect := point.GetOtherPoint(focusPair)
 
 			distance := focusPair.distance
 
 			// Ensure route without duplicate trips to same point by reducing pair set
-			pairsRefined := p.RemovePairsWithPoint(pairs)
+			pairsRefined := point.RemovePairsWithPoint(pairs)
 
 			// Add the shortest distance pair to the route
 			pairToAdd := Pair{index: len(routeOfPairs),
-				pointA: p, pointB: pointToConnect, distance: distance}
+				pointA: point, pointB: pointToConnect, distance: distance}
 
 			routeOfPairs = append(routeOfPairs, pairToAdd)
 
@@ -282,13 +350,13 @@ func (p Point) ConnectPointToClosest(pairs []Pair, routeOfPairs []Pair) []Pair {
 
 // RemovePairsWithPoint removes all pairs containing a given point
 // from a set of pairs.
-func (p Point) RemovePairsWithPoint(pairs []Pair) []Pair {
+func (point Point) RemovePairsWithPoint(pairs []Pair) []Pair {
 
 	pairsWithoutPoint := make([]Pair, len(pairs))
 	copy(pairsWithoutPoint, pairs)
 
 	for _, pair := range pairs {
-		if pair.pointA.index == p.index || pair.pointB.index == p.index {
+		if pair.pointA.index == point.index || pair.pointB.index == point.index {
 			if pairIndexToDelete, have := pair.GetIndex(pairsWithoutPoint); have {
 				pairsWithoutPoint = append(pairsWithoutPoint[:pairIndexToDelete], pairsWithoutPoint[pairIndexToDelete+1:]...)
 			}
@@ -298,10 +366,10 @@ func (p Point) RemovePairsWithPoint(pairs []Pair) []Pair {
 }
 
 // GetPairsContainingPoint returns all pairs containing a given point.
-func (p Point) GetPairsContainingPoint(pairs []Pair) []Pair {
+func (point Point) GetPairsContainingPoint(pairs []Pair) []Pair {
 	var pairsWithPoint []Pair
 	for _, pair := range pairs {
-		if pair.pointA.index == p.index || pair.pointB.index == p.index {
+		if pair.pointA.index == point.index || pair.pointB.index == point.index {
 			pairsWithPoint = append(
 				pairsWithPoint,
 				Pair{
@@ -316,9 +384,9 @@ func (p Point) GetPairsContainingPoint(pairs []Pair) []Pair {
 	return pairsWithPoint
 }
 
-// GetOtherPointInPair returns the paired point of a given point.
-func (p Point) GetOtherPoint(pair Pair) Point {
-	if pair.pointA == p {
+// GetOtherPoint returns the paired point of a given point.
+func (point Point) GetOtherPoint(pair Pair) Point {
+	if pair.pointA == point {
 		return pair.pointB
 	}
 	return pair.pointA
